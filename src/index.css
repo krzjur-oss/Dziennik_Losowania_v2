@@ -1,0 +1,67 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;700&display=swap');
+
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-serif: "Crimson Pro", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Custom palette matching the original retro paper aesthetic */
+  --color-brand-bg-light: #f5f0e8;
+  --color-brand-paper-light: #fdf8f0;
+  --color-brand-ink-light: #1a1208;
+  --color-brand-ink2-light: #3d3020;
+  --color-brand-muted-light: #8a7a60;
+  --color-brand-line-light: #d4c9b0;
+  --color-brand-accent-light: #8b1a1a;
+  --color-brand-accent2-light: #1a4a8b;
+  --color-brand-green-light: #1a6b3a;
+  --color-brand-gold-light: #c9930a;
+
+  --color-brand-bg-dark: #1a1a1f;
+  --color-brand-paper-dark: #23232b;
+  --color-brand-ink-dark: #e8e0d0;
+  --color-brand-ink2-dark: #c4b89a;
+  --color-brand-muted-dark: #7a7060;
+  --color-brand-line-dark: #3a3530;
+  --color-brand-accent-dark: #c05050;
+  --color-brand-accent2-dark: #4a7ab5;
+  --color-brand-green-dark: #2a9a52;
+  --color-brand-gold-dark: #d4a020;
+}
+
+/* Base custom styles based on the unique retro ledger line theme */
+body {
+  font-family: var(--font-serif);
+}
+
+.paper-ledger-lines {
+  background-image: repeating-linear-gradient(
+    0deg, transparent, transparent 39px,
+    rgba(212, 201, 176, 0.4) 39px, rgba(212, 201, 176, 0.4) 40px
+  );
+}
+
+.dark .paper-ledger-lines {
+  background-image: repeating-linear-gradient(
+    0deg, transparent, transparent 39px,
+    rgba(58, 53, 48, 0.5) 39px, rgba(58, 53, 48, 0.5) 40px
+  );
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-brand-line-light);
+  border-radius: 3px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--color-brand-line-dark);
+}

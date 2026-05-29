@@ -1,0 +1,6 @@
+{
+  "name": "Dziennik Losowania",
+  "description": "Generator losowania uczniów z dziennika klasowego",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
