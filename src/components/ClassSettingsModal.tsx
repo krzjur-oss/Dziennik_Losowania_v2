@@ -87,11 +87,14 @@ export default function ClassSettingsModal({
               Liczba uczniów w puli (1–99):
             </label>
             <input
-              type="number"
-              min={1}
-              max={99}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={poolSizeInput}
-              onChange={(e) => setPoolSizeInput(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^0-9]/g, '');
+                setPoolSizeInput(val);
+              }}
               onBlur={handlePoolSizeBlur}
               onFocus={(e) => e.target.select()}
               className="w-20 font-mono text-center text-[15px] p-2 border-1.5 border-brand-line-light dark:border-brand-line-dark rounded-lg bg-brand-bg-light dark:bg-brand-bg-dark text-brand-ink-light dark:text-brand-ink-dark outline-none focus:border-brand-accent-light dark:focus:border-brand-accent-dark"
@@ -103,11 +106,14 @@ export default function ClassSettingsModal({
               Rozmiar losowania (ile osób naraz):
             </label>
             <input
-              type="number"
-              min={1}
-              max={20}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={drawCountInput}
-              onChange={(e) => setDrawCountInput(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^0-9]/g, '');
+                setDrawCountInput(val);
+              }}
               onBlur={handleDrawCountBlur}
               onFocus={(e) => e.target.select()}
               className="w-20 font-mono text-center text-[15px] p-2 border-1.5 border-brand-line-light dark:border-brand-line-dark rounded-lg bg-brand-bg-light dark:bg-brand-bg-dark text-brand-ink-light dark:text-brand-ink-dark outline-none focus:border-brand-accent-light dark:focus:border-brand-accent-dark"

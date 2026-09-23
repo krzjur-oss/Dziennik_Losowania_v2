@@ -47,7 +47,8 @@ const StudentButton: React.FC<StudentButtonProps> = ({
   onToggleAbsent,
   onToggleVolunteered,
 }) => {
-  const touchTimer = useRef<NodeJS.Timeout | null>(null);
+  const touchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isLongPressRef = useRef(false);
 
   let styleClass =
     'border-brand-line-light dark:border-brand-line-dark opacity-50 bg-linear-to-br from-slate-100/30 to-slate-200/50 dark:from-slate-800/20 dark:to-slate-900/40 text-brand-muted-light dark:text-brand-muted-dark';
@@ -73,7 +74,9 @@ const StudentButton: React.FC<StudentButtonProps> = ({
   }
 
   const handleTouchStart = () => {
+    isLongPressRef.current = false;
     touchTimer.current = setTimeout(() => {
+      isLongPressRef.current = true;
       onToggleAbsent(n);
     }, 600);
   };
@@ -87,8 +90,10 @@ const StudentButton: React.FC<StudentButtonProps> = ({
   return (
     <button
       onClick={(e) => {
-        // Double click handles volunteered. React's onDoubleClick does not always fire on iOS reliably,
-        // so single click does normal toggle.
+        if (isLongPressRef.current) {
+          isLongPressRef.current = false;
+          return;
+        }
         if (e.detail === 1) {
           onToggleNumber(n);
         } else if (e.detail === 2) {
