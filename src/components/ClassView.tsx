@@ -26,6 +26,94 @@ interface ClassViewProps {
   onOpenStats: () => void;
 }
 
+interface StudentButtonProps {
+  n: number;
+  included: boolean;
+  isAbsent: boolean;
+  isVolunteered: boolean;
+  isDrawn: boolean;
+  onToggleNumber: (n: number) => void;
+  onToggleAbsent: (n: number) => void;
+  onToggleVolunteered: (n: number) => void;
+}
+
+const StudentButton: React.FC<StudentButtonProps> = ({
+  n,
+  included,
+  isAbsent,
+  isVolunteered,
+  isDrawn,
+  onToggleNumber,
+  onToggleAbsent,
+  onToggleVolunteered,
+}) => {
+  const touchTimer = useRef<NodeJS.Timeout | null>(null);
+
+  let styleClass =
+    'border-brand-line-light dark:border-brand-line-dark opacity-50 bg-linear-to-br from-slate-100/30 to-slate-200/50 dark:from-slate-800/20 dark:to-slate-900/40 text-brand-muted-light dark:text-brand-muted-dark';
+  let labelExtra = '';
+
+  if (included) {
+    if (isAbsent) {
+      styleClass =
+        'border-brand-accent-light dark:border-brand-accent-dark bg-brand-accent-light/10 text-brand-accent-light dark:text-brand-accent-dark line-through font-bold';
+      labelExtra = '⊘';
+    } else if (isVolunteered) {
+      styleClass =
+        'border-brand-accent2-light dark:border-brand-accent2-dark bg-brand-accent2-light/12 text-brand-accent2-light dark:text-brand-accent2-dark font-bold scale-102';
+      labelExtra = '✋';
+    } else if (isDrawn) {
+      styleClass =
+        'border-brand-gold-light dark:border-brand-gold-dark bg-brand-gold-light/12 text-brand-gold-light dark:text-brand-gold-dark font-semibold';
+      labelExtra = '✓';
+    } else {
+      styleClass =
+        'border-brand-green-light dark:border-brand-green-dark bg-brand-green-light/8 text-brand-green-light dark:text-brand-green-dark font-bold scale-100 hover:scale-104 hover:brightness-105';
+    }
+  }
+
+  const handleTouchStart = () => {
+    touchTimer.current = setTimeout(() => {
+      onToggleAbsent(n);
+    }, 600);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchTimer.current) {
+      clearTimeout(touchTimer.current);
+    }
+  };
+
+  return (
+    <button
+      onClick={(e) => {
+        // Double click handles volunteered. React's onDoubleClick does not always fire on iOS reliably,
+        // so single click does normal toggle.
+        if (e.detail === 1) {
+          onToggleNumber(n);
+        } else if (e.detail === 2) {
+          onToggleVolunteered(n);
+        }
+      }}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        onToggleAbsent(n);
+      }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchMove={handleTouchEnd}
+      className={`aspect-square rounded-xl text-base font-mono font-bold border-2 flex items-center justify-center relative select-none cursor-pointer duration-150 transition-all ${styleClass}`}
+    >
+      <span>{n}</span>
+      {labelExtra && (
+        <span className="absolute top-1 right-1.5 text-[9px] leading-tight font-bold">
+          {labelExtra}
+        </span>
+      )}
+    </button>
+  );
+};
+
 const ClassView: React.FC<ClassViewProps> = ({
   classItem,
   onToggleNumber,
@@ -68,72 +156,6 @@ const ClassView: React.FC<ClassViewProps> = ({
   // Determine standard labels
   const hasAbsent = absent.length > 0;
   const hasVolunteered = volunteered.length > 0;
-
-  // Render a single student cell with proper double tap/long press setup
-  const renderStudentButton = (p: { n: number; included: boolean }) => {
-    let styleClass = 'border-brand-line-light dark:border-brand-line-dark opacity-50 bg-linear-to-br from-slate-100/30 to-slate-200/50 dark:from-slate-800/20 dark:to-slate-900/40 text-brand-muted-light dark:text-brand-muted-dark';
-    let labelExtra = '';
-
-    if (p.included) {
-      if (absent.includes(p.n)) {
-        styleClass = 'border-brand-accent-light dark:border-brand-accent-dark bg-brand-accent-light/10 text-brand-accent-light dark:text-brand-accent-dark line-through font-bold';
-        labelExtra = '⊘';
-      } else if (volunteered.includes(p.n)) {
-        styleClass = 'border-brand-accent2-light dark:border-brand-accent2-dark bg-brand-accent2-light/12 text-brand-accent2-light dark:text-brand-accent2-dark font-bold scale-102';
-        labelExtra = '✋';
-      } else if (drawn.includes(p.n)) {
-        styleClass = 'border-brand-gold-light dark:border-brand-gold-dark bg-brand-gold-light/12 text-brand-gold-light dark:text-brand-gold-dark font-semibold';
-        labelExtra = '✓';
-      } else {
-        styleClass = 'border-brand-green-light dark:border-brand-green-dark bg-brand-green-light/8 text-brand-green-light dark:text-brand-green-dark font-bold scale-100 hover:scale-104 hover:brightness-105';
-      }
-    }
-
-    // Touch event timer to handle long press on mobile
-    let touchTimer = useRef<NodeJS.Timeout | null>(null);
-
-    const handleTouchStart = () => {
-      touchTimer.current = setTimeout(() => {
-        onToggleAbsent(p.n);
-      }, 600);
-    };
-
-    const handleTouchEnd = () => {
-      if (touchTimer.current) {
-        clearTimeout(touchTimer.current);
-      }
-    };
-
-    return (
-      <button
-        key={p.n}
-        onClick={(e) => {
-          // Double click handles volunteered. React's onDoubleClick does not always fire on iOS reliably,
-          // so single click does normal toggle.
-          if (e.detail === 1) {
-            onToggleNumber(p.n);
-          } else if (e.detail === 2) {
-            onToggleVolunteered(p.n);
-          }
-        }}
-        onContextMenu={(e) => {
-          e.preventDefault();
-          onToggleAbsent(p.n);
-        }}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onTouchMove={handleTouchEnd}
-        className={`aspect-square rounded-xl text-base font-mono font-bold border-2 flex items-center justify-center relative select-none cursor-pointer duration-150 transition-all ${styleClass}`}
-      >
-        <span>{p.n}</span>
-        {labelExtra && (
-          <span className="absolute top-1 right-1.5 text-[9px] leading-tight font-bold">
-            {labelExtra}
-          </span>
-        )}
-      </button>
-    );
-  };
 
   const handleDrawWithAnim = () => {
     setAnimatingDraw(true);
@@ -217,7 +239,19 @@ const ClassView: React.FC<ClassViewProps> = ({
 
       {/* ── Standard grid rendering ── */}
       <div className="grid grid-cols-10 gap-2 xs:gap-3 p-1">
-        {classItem.pool.slice(0, poolSize).map(renderStudentButton)}
+        {classItem.pool.slice(0, poolSize).map((p) => (
+          <StudentButton
+            key={p.n}
+            n={p.n}
+            included={p.included}
+            isAbsent={absent.includes(p.n)}
+            isVolunteered={volunteered.includes(p.n)}
+            isDrawn={drawn.includes(p.n)}
+            onToggleNumber={onToggleNumber}
+            onToggleAbsent={onToggleAbsent}
+            onToggleVolunteered={onToggleVolunteered}
+          />
+        ))}
       </div>
 
       {/* ── Collapsible Active Actions menu drawer ── */}

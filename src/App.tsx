@@ -19,9 +19,19 @@ const BACKUP_KEY = 'dziennik_backup';
 const THEME_KEY = 'dziennik_theme';
 const LAST_SEEN_VERSION_KEY = 'dziennik_lastSeenVersion';
 const VISITED_KEY = 'dziennik_visited';
-const APP_VERSION = '2.1';
+const APP_VERSION = '2.2';
 
 const UPDATES = [
+  {
+    version: '2.2',
+    date: '2026-09-23',
+    title: 'Naprawa edycji ustawień klasy i błędu zapisywania',
+    changes: [
+      '✏️ Umożliwiono swobodne usuwanie i wpisywanie nowej liczby uczniów oraz rozmiaru losowania w oknie ustawień klasy (pole nie blokuje się już na cyfrze 1)',
+      '🛡️ Naprawiono błąd Reacta po kliknięciu „Zapisz" (naruszenie kolejności Hooków przy zmianie rozmiaru puli), który wymuszał odświeżenie strony',
+      '✅ Poprawiono działanie akcji „Odznacz wszystkie", która zachowuje kafelki uczniów zamiast czyścić całą listę',
+    ],
+  },
   {
     version: '2.1',
     date: '2026-05-28',
@@ -360,8 +370,8 @@ export default function App() {
   };
 
   const handleDeselectAll = () => {
-    updateActiveClass(() => ({
-      pool: [], // Will be auto-regenerated based on poolSize dynamically
+    updateActiveClass((c) => ({
+      pool: c.pool.map((p) => ({ ...p, included: false })),
       drawnQueue: [],
       absent: [],
       volunteered: [],
@@ -403,22 +413,22 @@ export default function App() {
   // Safe parameters updates
   const handleSaveClassSettings = (pSize: number, dCount: number) => {
     updateActiveClass((c) => {
-      // Create template array based on new range size
-      let pool = [...c.pool];
-      while (pool.length < pSize) {
-        pool.push({ n: pool.length + 1, included: true });
-      }
-      if (pool.length > pSize) {
-        pool = pool.slice(0, pSize);
-      }
+      const existingMap = new Map((c.pool || []).map((p) => [p.n, p.included]));
+      const pool = Array.from({ length: pSize }, (_, i) => {
+        const n = i + 1;
+        return {
+          n,
+          included: existingMap.has(n) ? existingMap.get(n)! : true,
+        };
+      });
 
       return {
         pool,
         poolSize: pSize,
         drawCount: dCount,
-        drawnQueue: c.drawnQueue.filter((n) => n <= pSize),
-        absent: c.absent.filter((n) => n <= pSize),
-        volunteered: c.volunteered.filter((n) => n <= pSize),
+        drawnQueue: (c.drawnQueue || []).filter((n) => n <= pSize),
+        absent: (c.absent || []).filter((n) => n <= pSize),
+        volunteered: (c.volunteered || []).filter((n) => n <= pSize),
       };
     });
     setSettingsOpen(false);
@@ -777,19 +787,19 @@ export default function App() {
                       } else if (registration.waiting) {
                         alert('Nowa wersja została pobrana i czeka na aktywację. Zamknij i otwórz aplikację ponownie, aby zacząć z niej korzystać.');
                       } else {
-                        alert('Dziennik Losowania jest aktualny (Wersja 2.1). Wszystkie dane Twoich klas są w 100% bezpiecznie przechowywane w LocalStorage urządzenia i pozostaną nienaruszone.');
+                        alert(`Dziennik Losowania jest aktualny (Wersja ${APP_VERSION}). Wszystkie dane Twoich klas są w 100% bezpiecznie przechowywane w LocalStorage urządzenia i pozostaną nienaruszone.`);
                       }
                     })
                     .catch((err) => {
                       console.error('Błąd aktualizacji Service Workera:', err);
-                      alert('Dziennik Losowania jest aktualny (Wersja 2.1). Urządzenie jest w trybie offline lub serwer nie odpowiedział.');
+                      alert(`Dziennik Losowania jest aktualny (Wersja ${APP_VERSION}). Urządzenie jest w trybie offline lub serwer nie odpowiedział.`);
                     });
                 } else {
                   alert('Aplikacja działa pomyślnie. Dane klas są bezpiecznie zapisane w pamięci LocalStorage na tym urządzeniu i nie zostaną utracone.');
                 }
               })
               .catch(() => {
-                alert('Dziennik Losowania v2.1: Dane klas są w pełni bezpieczne w pamięci przeglądarki.');
+                alert(`Dziennik Losowania v${APP_VERSION}: Dane klas są w pełni bezpieczne w pamięci przeglądarki.`);
               });
           } else {
             alert('Twoja przeglądarka nie wspiera technologii PWA (Service Workerów), ale Twoje klasy są w pełni bezpieczne w pamięci LocalStorage.');

@@ -18,22 +18,52 @@ export default function ClassSettingsModal({
   onClose,
   onSave,
 }: ClassSettingsModalProps) {
-  const [poolSize, setPoolSize] = useState(30);
-  const [drawCount, setDrawCount] = useState(2);
+  const [poolSizeInput, setPoolSizeInput] = useState('30');
+  const [drawCountInput, setDrawCountInput] = useState('2');
 
   useEffect(() => {
-    if (classItem) {
-      setPoolSize(classItem.poolSize ?? 30);
-      setDrawCount(classItem.drawCount ?? 2);
+    if (classItem && isOpen) {
+      setPoolSizeInput(String(classItem.poolSize ?? 30));
+      setDrawCountInput(String(classItem.drawCount ?? 2));
     }
   }, [classItem, isOpen]);
 
   if (!isOpen || !classItem) return null;
 
+  const handlePoolSizeBlur = () => {
+    const trimmed = poolSizeInput.trim();
+    if (!trimmed) {
+      setPoolSizeInput(String(classItem.poolSize ?? 30));
+      return;
+    }
+    const val = parseInt(trimmed, 10);
+    if (isNaN(val)) {
+      setPoolSizeInput(String(classItem.poolSize ?? 30));
+    } else {
+      setPoolSizeInput(String(Math.max(1, Math.min(99, val))));
+    }
+  };
+
+  const handleDrawCountBlur = () => {
+    const trimmed = drawCountInput.trim();
+    if (!trimmed) {
+      setDrawCountInput(String(classItem.drawCount ?? 2));
+      return;
+    }
+    const val = parseInt(trimmed, 10);
+    if (isNaN(val)) {
+      setDrawCountInput(String(classItem.drawCount ?? 2));
+    } else {
+      setDrawCountInput(String(Math.max(1, Math.min(20, val))));
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const finalSize = Math.max(1, Math.min(99, poolSize));
-    const finalDraw = Math.max(1, Math.min(20, drawCount));
+    const parsedSize = parseInt(poolSizeInput, 10);
+    const finalSize = isNaN(parsedSize) ? (classItem.poolSize ?? 30) : Math.max(1, Math.min(99, parsedSize));
+    const parsedDraw = parseInt(drawCountInput, 10);
+    const finalDraw = isNaN(parsedDraw) ? (classItem.drawCount ?? 2) : Math.max(1, Math.min(20, parsedDraw));
     onSave(finalSize, finalDraw);
   };
 
@@ -60,8 +90,10 @@ export default function ClassSettingsModal({
               type="number"
               min={1}
               max={99}
-              value={poolSize}
-              onChange={(e) => setPoolSize(parseInt(e.target.value) || 1)}
+              value={poolSizeInput}
+              onChange={(e) => setPoolSizeInput(e.target.value)}
+              onBlur={handlePoolSizeBlur}
+              onFocus={(e) => e.target.select()}
               className="w-20 font-mono text-center text-[15px] p-2 border-1.5 border-brand-line-light dark:border-brand-line-dark rounded-lg bg-brand-bg-light dark:bg-brand-bg-dark text-brand-ink-light dark:text-brand-ink-dark outline-none focus:border-brand-accent-light dark:focus:border-brand-accent-dark"
             />
           </div>
@@ -74,8 +106,10 @@ export default function ClassSettingsModal({
               type="number"
               min={1}
               max={20}
-              value={drawCount}
-              onChange={(e) => setDrawCount(parseInt(e.target.value) || 1)}
+              value={drawCountInput}
+              onChange={(e) => setDrawCountInput(e.target.value)}
+              onBlur={handleDrawCountBlur}
+              onFocus={(e) => e.target.select()}
               className="w-20 font-mono text-center text-[15px] p-2 border-1.5 border-brand-line-light dark:border-brand-line-dark rounded-lg bg-brand-bg-light dark:bg-brand-bg-dark text-brand-ink-light dark:text-brand-ink-dark outline-none focus:border-brand-accent-light dark:focus:border-brand-accent-dark"
             />
           </div>
